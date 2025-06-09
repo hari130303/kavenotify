@@ -1,0 +1,54 @@
+
+services:
+
+  kavenotify-database:
+    container_name: kavenotify-database
+    image: mysql:8.0
+    ports:
+      - "3307:3306"  # Map MySQL container port to host
+    volumes:
+      - ./db-data/sql_data/:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWD}'  # Root password
+      MYSQL_DATABASE: '${DB_NAME}'      # Database name
+      # DB_TIMEZONE: '${DB_TIMEZONE}'              # Timezone
+    restart: always
+
+
+  kavenotify:
+    container_name: kavenotify
+    image: kavenotify-image
+    ports:
+      - "1333:1333"
+    restart: always
+    environment:
+      DB_HOST: '${DB_HOST}'
+      DB_PORT: '${DB_PORT}'
+      DB_NAME: '${DB_NAME}'
+      DB_USER: '${DB_USER}'
+      DB_PASSWD: '${DB_PASSWD}'
+      HOST_PORT: '${HOST_PORT}'
+      AES32KEY: '${AES32KEY}'
+      AESIVKEY: '${AESIVKEY}'
+      SCHEMA_NAME: '${SCHEMA_NAME}'
+      MONGO_HOST: '${MONGO_HOST}'
+      MONGO_PORT: '${MONGO_PORT}'
+      MONGO_USER: '${MONGO_USER}'
+      MONGO_PASS: '${MONGO_PASS}'
+      MONGO_DB: '${MONGO_DB}'
+      MONGO_USER_COLL: '${MONGO_USER_COLL}'
+      MONGO_LOGGER_COLL: '${MONGO_LOGGER_COLL}'
+      # AES_KEY: '${AES_KEY}'
+    volumes:
+      - ./uploads:/uploads
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "25123:27017" # Expose MongoDB port
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: '${MONGO_USER}' # Optional: sets root user
+      MONGODB_INITDB_ROOT_PASSWORD: '${MONGO_PASS}' # Optional: sets root password
+    volumes:
+      - ./db-data/mongo:/data/db # Persist data on your host in ./data folder

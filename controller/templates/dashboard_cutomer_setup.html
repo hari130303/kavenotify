@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KaveNotify - Customer Setup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: white;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .menu {
+      list-style: none;
+      padding: 0;
+    }
+
+    .menu li {
+      padding: 12px;
+      text-align: center;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .menu li:hover,
+    .menu .active {
+      background: #667eea;
+      color: white;
+    }
+
+    .container {
+      flex: 1;
+      padding: 30px;
+      overflow-x: auto;
+    }
+
+    .table-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .table-header h2 {
+      color: #333;
+    }
+
+    .add-btn {
+      padding: 8px 16px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .add-btn:hover {
+      background: #218838;
+    }
+
+    .search-box {
+      margin-bottom: 15px;
+    }
+
+    .search-box input {
+      padding: 8px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      cursor: pointer;
+    }
+
+    th {
+      background-color: #667eea;
+      color: white;
+    }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .pagination-controls button {
+      padding: 6px 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .pagination-controls button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .pagination-controls select {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .snackbar {
+      position: fixed;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 300px;
+      padding: 15px;
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transition: all 0.5s ease-in-out;
+      z-index: 1000;
+    }
+
+    .snackbar.show {
+      top: 20px;
+      opacity: 1;
+    }
+
+    .snackbar.success {
+      background-color: #28a745;
+    }
+
+    .snackbar.error {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3>KaveNotify</h3>
+    <ul class="menu">
+      <li onclick="window.location.href='/dashboard/single_message'">Single Message</li>
+      <li onclick="window.location.href='/dashboard/bulk_message'">Bulk Message</li>
+      <li class="active">Customer Setup</li>
+      <li onclick="window.location.href='/dashboard/number_manage'">Number Setup</li>
+      <li onclick="window.location.href='/dashboard/user_log'">User Log</li>
+
+    </ul>
+  </div>
+
+  <!-- Container -->
+  <div class="container">
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Customer Types</h2>
+        <button class="add-btn">Add</button>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search..." onkeyup="onSearch()" />
+      </div>
+
+      <table id="customerTable">
+        <thead>
+          <tr>
+            <th onclick="setOrderBy(0)" data-order="asc">Customer Type</th>
+            <th onclick="setOrderBy(1)" data-order="asc">Group Name</th>
+            <th onclick="setOrderBy(2)" data-order="asc">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="3" style="text-align:center;">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination-controls">
+        <div>
+          <button onclick="prevPage()">Previous</button>
+          <button onclick="nextPage()">Next</button>
+        </div>
+        <div>
+          Rows per page:
+          <select onchange="changeLimit(this.value)">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="snackbar"></div>
+
+  <script>
+    let currentPage = 1;
+    let currentLimit = 10;
+    let totalRecords = 0;
+    let currentSearchTerm = "";
+    let currentOrderBy = 0;
+    let currentOrderDir = "asc";
+
+    function showSnackbar(message, type = "success") {
+      const snackbar = document.getElementById("snackbar");
+      snackbar.innerHTML = message;
+      snackbar.className = `snackbar ${type} show`;
+      setTimeout(() => snackbar.classList.remove("show"), 1500);
+    }
+
+    function formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('en-GB') + " " + date.toLocaleTimeString();
+    }
+
+    function onSearch() {
+      const input = document.getElementById("searchInput");
+      currentSearchTerm = input.value.trim();
+      currentPage = 1;
+      loadCustomerTable();
+    }
+
+    function setOrderBy(index) {
+      const headers = document.querySelectorAll("#customerTable thead th");
+      const currentTh = headers[index];
+      const order = currentTh.getAttribute("data-order");
+
+      currentOrderBy = index;
+      currentOrderDir = order === "asc" ? "desc" : "asc";
+      currentTh.setAttribute("data-order", currentOrderDir);
+
+      loadCustomerTable();
+    }
+
+    async function loadCustomerTable() {
+      const sessionString = localStorage.getItem("session_id");
+      if (!sessionString) {
+        showSnackbar("Session expired. Please log in again.", "error");
+        return;
+      }
+
+      const tableBody = document.querySelector("#customerTable tbody");
+      tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Loading...</td></tr>";
+
+      const requestData = {
+        session_string: sessionString,
+        search_term: currentSearchTerm,
+        start: (currentPage - 1) * currentLimit,
+        limit: currentLimit,
+        order_by: currentOrderBy,
+        order_dir: currentOrderDir
+      };
+
+      try {
+        const response = await fetch("/get/customer_type/table", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData),
+        });
+
+        const result = await response.json();
+        if (response.ok && result.data && result.data.data) {
+          tableBody.innerHTML = "";
+          totalRecords = result.data.count || 0;
+
+          if (result.data.data.length > 0) {
+            result.data.data.forEach((item) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${item.customer_name}</td>
+                <td>${item.group_name}</td>
+                <td>${formatTimestamp(item.created_at)}</td>
+              `;
+              tableBody.appendChild(row);
+            });
+          } else {
+            tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No records found.</td></tr>";
+          }
+          updatePaginationButtons();
+        } else {
+          tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No records found.</td></tr>";
+        }
+      } catch (error) {
+        showSnackbar("Error loading customer types.", "error");
+        tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Error fetching data.</td></tr>";
+      }
+    }
+
+    function updatePaginationButtons() {
+      const prevBtn = document.querySelector(".pagination-controls button:nth-child(1)");
+      const nextBtn = document.querySelector(".pagination-controls button:nth-child(2)");
+
+      prevBtn.disabled = currentPage === 1;
+      const totalPages = Math.ceil(totalRecords / currentLimit);
+      nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(totalRecords / currentLimit);
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadCustomerTable();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadCustomerTable();
+      }
+    }
+
+    function changeLimit(newLimit) {
+      currentLimit = parseInt(newLimit);
+      currentPage = 1;
+      loadCustomerTable();
+    }
+
+    loadCustomerTable();
+  </script>
+</body>
+
+</html>

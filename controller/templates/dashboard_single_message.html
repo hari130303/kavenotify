@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaveNotify - Single Message</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .menu li {
+            padding: 12px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .menu li:hover,
+        .menu .active {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn {
+            background: #28a745;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+        }
+
+        .snackbar {
+            position: fixed;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 300px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+            z-index: 1000;
+        }
+
+        .snackbar.show {
+            top: 20px;
+            opacity: 1;
+        }
+
+        .snackbar.success {
+            background-color: #28a745;
+        }
+
+        .snackbar.error {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>KaveNotify</h3>
+        <ul class="menu">
+            <li class="active">Single Message</li>
+            <li onclick="window.location.href='/dashboard/bulk_message'">Bulk Message</li>
+            <li onclick="window.location.href='/dashboard/customer_setup'">Customer Setup</li>
+            <li onclick="window.location.href='/dashboard/number_manage'">Number Setup</li>
+            <li onclick="window.location.href='/dashboard/user_log'">User Log</li>
+        </ul>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="form-container">
+            <h2>Send Single Message</h2>
+            <form id="single-message-form">
+                <div class="input-group">
+                    <label for="phone_number">Phone Number *</label>
+                    <input type="text" id="phone_number" name="phone_number" maxlength="10" placeholder="Enter Phone Number"
+                        required />
+                </div>
+                <div class="input-group">
+                    <label for="user_name">Username * (Max 10 characters)</label>
+                    <input type="text" id="user_name" name="user_name" maxlength="10" placeholder="Enter Username" required />
+                </div>
+                
+                <div class="input-group">
+                    <label for="message_content">Message Content * (Min 15 characters)</label>
+                    <textarea id="message_content" name="message_content" placeholder="Enter Message" rows="4"
+                        required></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="customer_type">Customer Type *</label>
+                    <select id="customer_type" name="customer_type" required>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn submit-btn">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="snackbar"></div>
+
+    <script>
+        function showSnackbar(message, type = "success") {
+            const snackbar = document.getElementById("snackbar");
+            snackbar.innerHTML = message;
+            snackbar.className = `snackbar ${type} show`;
+            setTimeout(() => snackbar.classList.remove("show"), 1000);
+        }
+
+        async function fetchCustomerTypes() {
+            try {
+                const sessionString = localStorage.getItem("session_id");
+                if (!sessionString) {
+                    showSnackbar("Session expired. Please log in again.", "error");
+                    return;
+                }
+
+                const requestData = {
+                    session_string: sessionString
+                };
+
+                const response = await fetch("/get/customer_type", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestData)
+                });
+
+                const responseData = await response.json();
+                const select = document.getElementById("customer_type");
+
+                // Reset dropdown
+                select.innerHTML = '<option value="">Select Customer Type</option>';
+
+                if (response.ok && responseData.data) {
+                    responseData.data.forEach(item => {
+                        const option = document.createElement("option");
+                        option.value = item.customer_id;
+                        option.textContent = item.customer_name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    showSnackbar(responseData.message || "Failed to load customer types.", "error");
+                }
+            } catch (error) {
+                showSnackbar("Network error. Please try again.", "error");
+            }
+        }
+
+
+        document.getElementById("single-message-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const messageContent = document.getElementById("message_content").value;
+            if (messageContent.length < 15) {
+                showSnackbar("Message must be at least 15 characters long.", "error");
+                return;
+            }
+
+            const formData = {
+                session_id:localStorage.getItem("session_id"),
+                phone_number: document.getElementById("phone_number").value,
+                user_name:document.getElementById("user_name").value,
+                message_content: messageContent,
+                customer_type_id: parseInt(document.getElementById("customer_type").value,10)|0,
+
+            };
+
+            try {
+                const response = await fetch("/send/single_message", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData),
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showSnackbar(result.message, "success");
+                    setTimeout(() => { window.location.reload(); }, 1000);
+                } else {
+                    showSnackbar(result.message || "Message sending failed!", "error");
+                }
+            } catch (error) {
+                showSnackbar("Network error. Please try again.", "error");
+            }
+        });
+
+        fetchCustomerTypes();
+    </script>
+</body>
+
+</html>

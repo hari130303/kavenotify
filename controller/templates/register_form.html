@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaveNotify - Register</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-attachment: fixed;
+    padding: 20px 0;
+}
+
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 350px;
+            margin: auto;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus {
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .register-btn {
+            background: #28a745;
+            color: white;
+            margin-top: 10px;
+        }
+        .register-btn:hover {
+            background: #218838;
+        }
+        .link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .link a:hover {
+            text-decoration: underline;
+        }
+        .snackbar {
+            position: fixed;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 300px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: all 0.5s ease-in-out;
+            z-index: 1000;
+        }
+        .snackbar.show {
+            top: 20px;
+            opacity: 1;
+        }
+        .snackbar.success {
+            background-color: #28a745;
+        }
+        .snackbar.error {
+            background-color: #dc3545;
+        }
+        .snackbar .close-btn {
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="snackbar"></div>
+        <h2>Register</h2>
+        <form id="register-form">
+            <div class="input-group">
+                <label for="group_name">Group Name *</label>
+                <input type="text" id="group_name" name="group_name" placeholder="Enter Group Name" required />
+            </div>
+            <div class="input-group">
+                <label for="group_desc">Group Description</label>
+                <input type="text" id="group_desc" name="group_desc" placeholder="Enter Group Description" />
+            </div>
+            <div class="input-group">
+                <label for="contact_number">Contact Number *</label>
+                <input type="text" id="contact_number" name="contact_number" placeholder="Enter Contact Number" required />
+            </div>
+            
+            <div class="input-group">
+                <label for="mail_id">Email ID *</label>
+                <input type="email" id="mail_id" name="mail_id" placeholder="Enter Email ID" required />
+            </div>
+            <div class="input-group">
+                <label for="user_name">User Name *</label>
+                <input type="text" id="user_name" name="user_name" placeholder="Enter User Name" required />
+            </div>
+            <div class="input-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" placeholder="Enter Password" required />
+            </div>
+            <div class="input-group">
+                <label for="customer_type">Customer Type * (Used to categorize customers)</label>
+                <input type="text" id="customer_type" name="customer_type" placeholder="Enter Customer Type" required />
+            </div>
+            <button type="submit" class="btn register-btn">Register</button>
+        </form>
+        <p class="link">Already have an account? <a href="/">Login Here</a></p>
+    </div>
+    <script>
+        function showSnackbar(message, type = "success") {
+            const snackbar = document.getElementById("snackbar");
+            snackbar.innerHTML = `${message} <button class="close-btn" onclick="hideSnackbar()">×</button>`;
+            snackbar.className = `snackbar ${type} show`;
+            setTimeout(() => {
+                hideSnackbar();
+            }, 1000);
+        }
+        function hideSnackbar() {
+            document.getElementById("snackbar").classList.remove("show");
+        }
+        document.getElementById("register-form").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const formData = {
+                group_name: document.getElementById("group_name").value,
+                group_desc: document.getElementById("group_desc").value,
+                contact_number: document.getElementById("contact_number").value,
+                mail_id: document.getElementById("mail_id").value,
+                user_name: document.getElementById("user_name").value,
+                password: document.getElementById("password").value,
+                customer_type: document.getElementById("customer_type").value
+            };
+            try {
+                const response = await fetch("/register-api", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData),
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showSnackbar(result.message, "success");
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1000);
+                } else {
+                    showSnackbar(result.message || "Registration failed!", "error");
+                }
+            } catch (error) {
+                showSnackbar("Network error. Please try again.", "error");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Ignore environment variables
+.env
+
+# Ignore binary files (you can specify patterns like *.exe or exact filenames)
+*.exe
+*.bin
+*.out
+
+# Ignore database folders or data dumps
+db-data/
+
+Kavenotify-binary
