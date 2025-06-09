@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	//
 	// Load environment configuration
 	err := envconfig.ENV_CONGIF()
 	if err != nil {
