@@ -7,7 +7,15 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type LogUserStruct struct {
+	Uid      string    `bson:"_id"`
+	UserName string    `bson:"user_name"`
+	LogType  string    `bson:"entry_type"`
+	LogTime  time.Time `bson:"entry_time"`
+}
 
 func UserLogger(userName string, entryType string) {
 	Data := bson.M{"user_name": userName, "entry_type": entryType, "entry_time": time.Now()}
@@ -25,18 +33,41 @@ func UserLoginLog(searchTerm string, start int, limit int, orderBy int) (any, er
 
 	var tableData TableData
 
-	// searchFilter := bson.M{"user_name": bson.M{"$regex": searchTerm}}
-	// // Define find options with sorting
+	searchFilter := bson.M{"user_name": bson.M{"$regex": searchTerm}}
 
-	// if orderBy == 0 {
-	// 	orderBy = 1
-	// }
+	// Define find options with sorting
+	orderColumn := map[int]string{
+		1: "user_name",
+	}
+	if orderBy == 0 || orderBy > len(orderColumn) {
+		orderBy = 1
+	}
 
-	// orderColumn := map[int]string{
-	// 	1: "user_name",
-	// }
-	// findOptions := options.Find().SetLimit(int64(limit)).SetSort(bson.D{{orderColumn[orderBy], 1}}) // Sort by age ascending, then name descending
+	column, ok := orderColumn[orderBy]
+	if !ok {
+		column = "user_name"
+	}
 
+	findOptions := options.Find().SetSkip(int64(start)).SetLimit(int64(limit)).SetSort(bson.D{{column, 1}}) // Sort by age ascending, then name descending
+
+	cursor, err := lmdb.Find(context.TODO(), searchFilter, findOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.TODO())
+
+	results := []LogUserStruct{}
+	if err := cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range results {
+		fmt.Println(result)
+	}
+	tableData.Count = len(results)
+	tableData.Data = results
+	tableData.Start = start
+	tableData.Limit = limit
 	return tableData, nil
 
 }

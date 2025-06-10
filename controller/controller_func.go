@@ -196,13 +196,13 @@ func GetUserLoginLog(c *gin.Context) {
 		return
 	}
 
-	UserData, err := dbfunction.SessionCheck(RequestData.SessionString)
+	_, err = dbfunction.SessionCheck(RequestData.SessionString)
 	if err != nil {
 		ErrorJson(c, http.StatusBadRequest, fmt.Errorf("internal server error"))
 		return
 	}
 
-	returnData, err := dbfunction.NumberManageTable(UserData.GroupId, RequestData.SearchTerm, RequestData.Start, RequestData.Limit, RequestData.OrderBy)
+	returnData, err := dbfunction.UserLoginLog(RequestData.SearchTerm, RequestData.Start, RequestData.Limit, RequestData.OrderBy)
 	if err != nil {
 		ErrorJson(c, http.StatusBadRequest, fmt.Errorf("internal server error : %s", err))
 		return

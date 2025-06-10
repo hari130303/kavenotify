@@ -313,8 +313,8 @@
             result.data.data.forEach((item) => {
               const row = document.createElement("tr");
               row.innerHTML = `
-                <td>${item.user_name}</td>
-                <td>${formatTimestamp(item.login_time)}</td>
+                <td>${item.UserName}</td>
+                <td>${formatTimestamp(item.LogTime)}</td>
               `;
               tableBody.appendChild(row);
             });
