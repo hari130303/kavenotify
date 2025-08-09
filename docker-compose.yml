@@ -41,6 +41,7 @@ services:
       # AES_KEY: '${AES_KEY}'
     volumes:
       - ./uploads:/uploads
+
   mongodb:
     image: mongodb/mongodb-community-server:latest
     container_name: mongodb
@@ -52,3 +53,16 @@ services:
       MONGODB_INITDB_ROOT_PASSWORD: '${MONGO_PASS}' # Optional: sets root password
     volumes:
       - ./db-data/mongo:/data/db # Persist data on your host in ./data folder
+      
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # Standard AMQP port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - ./db-data/rabbit/:/var/lib/rabbitmq # Persistent data volume
+      - ./db-data/rabbit/:/var/log/rabbitmq # Persistent log volume

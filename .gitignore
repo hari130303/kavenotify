@@ -8,5 +8,5 @@
 
 # Ignore database folders or data dumps
 db-data/
-
+docs/
 Kavenotify-binary

@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	dbfunction "kavenotify/db_function"
 	"net/http"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,9 +29,36 @@ func Login(c *gin.Context) {
 		ErrorJson(c, http.StatusBadRequest, err)
 		return
 	}
-	dbfunction.UserLogger(RequestData.UserName, "LOGIN")
 
 	WriteJson(c, http.StatusOK, "Login Successful", returnData)
+
+	// dbfunction.UserLogger(RequestData.UserName, "LOGIN")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// body := "Hello World!"
+
+	// var queueStruct struct{
+	// 	RequestedName string
+
+	// }
+
+	// jsnString,err:=json.Marshal()
+
+	err = dbfunction.RabbitChannel.PublishWithContext(ctx,
+		"",                     // exchange
+		dbfunction.Queue1.Name, // routing key
+		false,                  // mandatory
+		false,                  // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(RequestData.UserName),
+		})
+
+	if err != nil {
+		fmt.Println("error during add the data to queue : ", err)
+	}
+
 }
 
 func RegisterApi(c *gin.Context) {

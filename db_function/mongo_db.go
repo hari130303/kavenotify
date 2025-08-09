@@ -61,10 +61,12 @@ func UserLoginLog(searchTerm string, start int, limit int, orderBy int) (any, er
 		log.Fatal(err)
 	}
 
-	for _, result := range results {
-		fmt.Println(result)
+	opts := options.Count().SetHint("_id_")
+	count, err := lmdb.CountDocuments(context.TODO(), searchFilter, opts)
+	if err != nil {
+		panic(err)
 	}
-	tableData.Count = len(results)
+	tableData.Count = int(count)
 	tableData.Data = results
 	tableData.Start = start
 	tableData.Limit = limit

@@ -15,7 +15,7 @@ import (
 
 var db *sql.DB
 
-var umdb *mongo.Collection
+// var umdb *mongo.Collection
 var lmdb *mongo.Collection
 
 // username:=os.Genenv("sdclskm")
@@ -76,7 +76,7 @@ func MONOGO_DB_Conn() error {
 	}
 
 	// Initialize the global collection
-	umdb = client.Database(envconfig.MONGO_DB).Collection(envconfig.MONGO_USER_COLL)
+	// umdb = client.Database(envconfig.MONGO_DB).Collection(envconfig.MONGO_USER_COLL)
 	lmdb = client.Database(envconfig.MONGO_DB).Collection(envconfig.MONGO_LOGGER_COLL)
 
 	// log.Println("✅ MongoDB connected successfully")

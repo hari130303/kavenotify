@@ -37,6 +37,16 @@ func main() {
 	}
 	fmt.Println("Mongo database connected")
 
+	// Initialize rabbitmq
+	err = dbfunction.RabbitQueue()
+	if err != nil {
+		log.Fatalf("Error creating rabbit queue: %v", err)
+	}
+	fmt.Println("Rabbit queue created")
+
+	//start the rabbit mq listener 
+	go dbfunction.RabbitReciever()
+
 	// Initialize Gin router
 	r := gin.Default()
 	r.Use(corsMiddleware())
